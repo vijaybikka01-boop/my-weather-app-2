@@ -1,7 +1,55 @@
 ﻿@page "/"
+@using System.Net.Http.Json
+@inject HttpClient Http
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Weather App</PageTitle>
 
-<h1>Hello, world!</h1>
+<div style="max-width: 400px; margin: auto; text-align: center; font-family: sans-serif;">
+    <h2>☀️ Quick Weather</h2>
+    
+    <div style="margin-bottom: 20px;">
+        <input @bind="cityQuery" @bind:event="oninput" placeholder="City or Zipcode (USA)" 
+               style="padding: 10px; border-radius: 5px; border: 1px solid #ccc; width: 70%;" />
+        <button @onclick="GetWeather" style="padding: 10px; cursor: pointer;">Search</button>
+    </div>
 
-Welcome to your new app.
+    @if (weather != null)
+    {
+        <div style="background: #f0f8ff; padding: 20px; border-radius: 15px;">
+            <h3>@weather.Name</h3>
+            <h1 style="font-size: 3rem; margin: 10px 0;">@Math.Round(weather.Main.Temp)°F</h1>
+            <p style="text-transform: capitalize; color: #555;">@weather.Weather[0].Description</p>
+            <p>💨 Wind: @weather.Wind.Speed mph | 💧 Humidity: @weather.Main.Humidity%</p>
+        </div>
+    }
+</div>
+
+@code {
+    private string cityQuery = "";
+    private WeatherData? weather;
+    // Note: In a production app, use an API proxy to hide this key. 
+    // For a small friend-only app, you can paste it here directly.
+    private string apiKey = "YOUR_OPENWEATHER_API_KEY"; 
+
+    private async Task GetWeather()
+    {
+        if (string.IsNullOrWhiteSpace(cityQuery)) return;
+
+        var url = $"https://api.openweathermap.org/data/2.5/weather?q={cityQuery},us&units=imperial&appid={apiKey}";
+        try {
+            weather = await Http.GetFromJsonAsync<WeatherData>(url);
+        } catch {
+            // Handle error (e.g., city not found)
+        }
+    }
+
+    public class WeatherData {
+        public string Name { get; set; } = "";
+        public MainInfo Main { get; set; } = new();
+        public WindInfo Wind { get; set; } = new();
+        public WeatherDesc[] Weather { get; set; } = Array.Empty<WeatherDesc>();
+    }
+    public class MainInfo { public float Temp { get; set; } public int Humidity { get; set; } }
+    public class WindInfo { public float Speed { get; set; } }
+    public class WeatherDesc { public string Description { get; set; } = ""; }
+}
