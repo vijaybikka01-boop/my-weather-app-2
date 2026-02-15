@@ -3,7 +3,7 @@ name: Azure Static Web Apps CI/CD
 on:
   push:
     branches:
-      - main  # Deployment triggers every time you push to main
+      - main
 
 jobs:
   build_and_deploy_job:
@@ -20,5 +20,6 @@ jobs:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
-          app_location: "/" # Location of your Blazor project
-          output_location: "wwwroot" # The published output folder
+          app_location: "Client" # Point to your Blazor Client project directory
+          api_location: "Api"    # Point to your API directory (optional)
+          output_location: "wwwroot"
